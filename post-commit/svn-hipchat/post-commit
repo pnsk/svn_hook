@@ -1,0 +1,74 @@
+#!/bin/sh
+
+# POST-COMMIT HOOK
+#   notify to HipChat room
+#
+#   [1] REPOS-PATH   (the path to this repository)
+#   [2] REV          (the number of the revision just committed)
+
+#-----------------------------------------
+# SVN PARAMETERS
+#-----------------------------------------
+REPOS="$1"
+REV="$2"
+
+#-----------------------------------------
+# HipChat Settings
+#-----------------------------------------
+HIPCHAT_TOKEN=""
+FROM="SVN"
+URL="https://api.hipchat.com/v1/rooms/message?auth_token=${HIPCHAT_TOKEN}&from=${FROM}&notify=1"
+
+#-----------------------------------------
+# functions
+#-----------------------------------------
+
+exec_svnlook()
+{
+        RTN=`svnlook $1 ${REPOS} -r ${REV}`
+        echo ${RTN}
+}
+
+check_change_dir()
+{
+        RTN=`svnlook dirs-changed ${REPOS} -r ${REV}`
+        echo ${RTN}
+}
+
+exec_hipchat()
+{
+        C_AUTHOR=`exec_svnlook author`
+        C_MESSAGE=`exec_svnlook log`
+        C_FILES=`exec_svnlook changed`
+
+        MESSAGE=`cat << EOF
+                <b>msg: </b>${C_MESSAGE}<br />
+                <b>author :</b> ${C_AUTHOR}  <br />
+                <b>log: </b> <br /> ${C_FILES} <br />
+EOF`
+
+        curl -X POST --data-urlencode "message=${MESSAGE}" -d room_id=${1} -d color=${2} $URL -o /dev/null -w '%{http_code}\n' -s
+}
+
+#-----------------------------------------
+# NOTIFICATION SETTINGS
+#-----------------------------------------
+CHANGED_DIRS=`check_change_dir`
+
+if echo ${CHANGED_DIRS} | grep "^hogehoge/hagehage/" > /dev/null
+then
+        ROOMID=""
+        exec_hipchat ${ROOMID} yellow
+elif echo ${CHANGED_DIRS} | grep "^hoge/fuga/" > /dev/null
+then
+        ROOMID=""
+        exec_hipchat ${ROOMID} red
+else
+        ROOMID=""
+        exec_hipchat ${ROOMID} green
+fi
+
+exit 0
+
+
+
