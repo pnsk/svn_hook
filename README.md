@@ -1,3 +1,4 @@
 # svn_hook
 
-github-flavored-markdown#1
+## Issues
+https://github.com/pnsk/svn_hook/issues/
