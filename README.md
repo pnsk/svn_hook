@@ -1,3 +1,3 @@
 # svn_hook
 
-Issue #1
+github-flavored-markdown#1
