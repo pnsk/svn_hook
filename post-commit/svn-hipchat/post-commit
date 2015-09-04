@@ -29,6 +29,12 @@ exec_svnlook()
         echo ${RTN}
 }
 
+exec_svnlook_changed()
+{
+        RTN=`svnlook changed ${REPOS} -r ${REV} | awk '{if(NR!=NF+1)  {1; {print $0 "<br>"}} else {print $0}}'`
+        echo ${RTN}
+}
+
 check_change_dir()
 {
         RTN=`svnlook dirs-changed ${REPOS} -r ${REV}`
@@ -39,7 +45,7 @@ exec_hipchat()
 {
         C_AUTHOR=`exec_svnlook author`
         C_MESSAGE=`exec_svnlook log`
-        C_FILES=`exec_svnlook changed`
+        C_FILES=`exec_svnlook_changed`
 
         MESSAGE=`cat << EOF
                 <b>msg: </b>${C_MESSAGE}<br />
